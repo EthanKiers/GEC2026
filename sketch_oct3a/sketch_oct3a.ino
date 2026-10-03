@@ -3,6 +3,8 @@
   
   int enaLeft = 10;
   int enaRight = 11;
+  int enaLeft = 10;
+  int enaRight = 11;
   int leftMotorPin1 = 2;
   int leftMotorPin2 = 3;
   int rightMotorPin1 = 4;
@@ -21,6 +23,7 @@
   //const byte pinLED = A3; // for led
 
 // Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
+// Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 
 void setup() {
   pinMode(enaLeft, OUTPUT);
@@ -29,7 +32,15 @@ void setup() {
   pinMode(leftMotorPin2, OUTPUT);
   pinMode(rightMotorPin1, OUTPUT);
   pinMode(rightMotorPin2, OUTPUT);
+  pinMode(enaLeft, OUTPUT);
+  pinMode(enaRight, OUTPUT);
+  pinMode(leftMotorPin1, OUTPUT);
+  pinMode(leftMotorPin2, OUTPUT);
+  pinMode(rightMotorPin1, OUTPUT);
+  pinMode(rightMotorPin2, OUTPUT);
   // pinMode (pinLED, OUTPUT); //led
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
 
@@ -49,13 +60,27 @@ void setup() {
 
 void loop() {
   //delay(1000);
+  //delay(1000);
 
   digitalWrite(leftMotorPin1, HIGH);
   digitalWrite(leftMotorPin2, LOW);
 
   analogWrite(enaLeft, 200);
 
+  digitalWrite(leftMotorPin2, LOW);
+
+  analogWrite(enaLeft, 200);
+
   digitalWrite(rightMotorPin1, HIGH);
+  digitalWrite(rightMotorPin2, LOW);
+
+  analogWrite(enaRight, 200);
+  delay(2000);
+
+  //forward
+  //backward
+  //left
+  //right
   digitalWrite(rightMotorPin2, LOW);
 
   analogWrite(enaRight, 200);
