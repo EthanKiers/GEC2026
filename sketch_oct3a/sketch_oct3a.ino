@@ -35,6 +35,8 @@
   int startTime;
   int runTime;
 
+  int LEDPin = A3;
+
 Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 
 void setup() {
@@ -59,21 +61,15 @@ void setup() {
     Serial.println("No TCS34725 found ... check your connections");
     while (1); // halt!
   }
-
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
  
  startTime = millis();
+
+ pinMode(LEDPin, OUTPUT);
+ digitalWrite(LEDPin, LOW);
 
 }
 
 void loop() {
-  if(collected >= 3){
-    //return to starting position
-  }
   //go forward
   digitalWrite(leftMotorPin1, HIGH);
   digitalWrite(leftMotorPin2, LOW);
@@ -82,13 +78,18 @@ void loop() {
   digitalWrite(rightMotorPin1, LOW);
   digitalWrite(rightMotorPin2, HIGH);
   analogWrite(enaRight, 255);
-
+  
   //set speed for scoop
   analogWrite(enaScoop, 200);
 
   //delay(2000);
 
   //read from ultrasonic sensor
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
   duration = pulseIn(echoPin, HIGH);
   distance = (duration*.0343)/2;
   Serial.print("Distance: ");
@@ -106,12 +107,16 @@ void loop() {
   Serial.print("\tG:\t"); Serial.print(int(green));
   Serial.print("\tB:\t"); Serial.print(int(blue));
   //for a value to be blue, the blue value should be greater than 90
+  if(blue > 65 && red < 80 && red > 60){
+    Serial.println("\n\n=================Blue!=====================\n\n");   
+  }
  
   Serial.print("\n");
 
-  //daniel did this part
   //if distance < 5 & blue < 80 then stop, back up, turn, drive a bit, turn again, drive, continue loop
-  if(distance < 5 && int(blue) < 80){
+  if(distance < 5 && blue < 80){
+    Serial.println("detected garbage");
+    Serial.println(distance);
     //stop
     digitalWrite(leftMotorPin1, LOW);
     digitalWrite(leftMotorPin2, LOW);
@@ -179,7 +184,8 @@ void loop() {
 
   }
 
-  if(distance < 5 && int(blue) > 80){
+  if(distance < 5 && int(blue) > 65 && red < 80 && red > 60){
+    Serial.println("detected ball");
     //drive forward until ball is under scoop
     digitalWrite(leftMotorPin1, HIGH);
     digitalWrite(leftMotorPin2, LOW);
@@ -208,7 +214,8 @@ void loop() {
   }
 
   runTime = startTime + millis();
-  if(totalTime >= duration){
+  if(totalTime <= runTime){
+    Serial.println("hit the end of the enclosure");
     //need to alternate turning directionsgi
     //stop
     digitalWrite(leftMotorPin1, LOW);
@@ -266,7 +273,9 @@ void loop() {
 
   }
 
+
   if(collected >= 3){
+    Serial.println("collected all balls");
    //return to start
    //head to edge of box, follow it until back to start, 
    //turn into box
