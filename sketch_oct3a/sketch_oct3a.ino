@@ -16,13 +16,26 @@
   int echoPin = 7;
 
   float duration, distance;
- 
-};   
 
 
-  //const byte pinLED = A3; // for led
+  int enaScoop = 9;
+  int scoopMotorPin1 = 12;
+  int scoopMotorPin2 = 13;
 
-// Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
+  int collected = 0;
+
+  int lastTurnDirection = 1; //0 is left, 1 is right. should start by turning left, can be changed depending on the position of the satarting box
+
+  int baseTime = 10000; //base amount of time to go from one side of the box to the other
+  int turnTime = 5000; //time it takes to go around a piece of garbage
+  int scoopTime = 2000; //time it takes to scoop up a ball
+
+  int totalTime = baseTime;
+  
+  int startTime;
+  int runTime;
+
+Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 
 void setup() {
   pinMode(enaLeft, OUTPUT);
@@ -31,7 +44,10 @@ void setup() {
   pinMode(leftMotorPin2, OUTPUT);
   pinMode(rightMotorPin1, OUTPUT);
   pinMode(rightMotorPin2, OUTPUT);
-  // pinMode (pinLED, OUTPUT); //led
+  pinMode(enaScoop, OUTPUT);
+  pinMode(scoopMotorPin1, OUTPUT);
+  pinMode(scoopMotorPin2, OUTPUT);
+  delay(2000);
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
 
@@ -43,48 +59,43 @@ void setup() {
     Serial.println("No TCS34725 found ... check your connections");
     while (1); // halt!
   }
- 
-
-}
-//R:	90	G:	86	B:	63
-//R:	63	G:	88	B:	93
-
-void loop() {
-  //delay(1000);
-
-  digitalWrite(leftMotorPin1, HIGH);
-  digitalWrite(leftMotorPin2, LOW);
-
-  analogWrite(enaLeft, 200);
-
-  digitalWrite(rightMotorPin1, HIGH);
-  digitalWrite(rightMotorPin2, LOW);
-
-  analogWrite(enaRight, 200);
-  delay(2000);
-
-  //forward
-  //backward
-  //left
-  //right
-
-  //read from ultrasonic sensor
-  //if at wall, back up, turn  to one side, move a bit, turn again, head back
-  //constantly scan from sensor to see what colour things are
 
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
   digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
+ 
+ startTime = millis();
 
+}
+
+void loop() {
+  if(collected >= 3){
+    //return to starting position
+  }
+  //go forward
+  digitalWrite(leftMotorPin1, HIGH);
+  digitalWrite(leftMotorPin2, LOW);
+  analogWrite(enaLeft, 255);
+
+  digitalWrite(rightMotorPin1, LOW);
+  digitalWrite(rightMotorPin2, HIGH);
+  analogWrite(enaRight, 255);
+
+  //set speed for scoop
+  analogWrite(enaScoop, 200);
+
+  //delay(2000);
+
+  //read from ultrasonic sensor
   duration = pulseIn(echoPin, HIGH);
   distance = (duration*.0343)/2;
   Serial.print("Distance: ");
   Serial.println(distance);
   delay(100);
 
-//read from colour sensor
+  //read from colour sensor
   float red, green, blue;
   tcs.setInterrupt(false);  // turn on LED
   delay(60);  // takes 50ms to read
@@ -98,34 +109,192 @@ void loop() {
  
   Serial.print("\n");
 
-//   //if distance < 5 & blue < 80 then stop, back up, turn, drive a bit, turn again, drive, continue loop
-//   if(distance < 5 && blue < 80){
-//     //stop
-//     digitalWrite(leftMotorPin1, LOW);
-//     digitalWrite(leftMotorPin2, LOW);
-//     digitalWrite(rightMotorPin1, LOW);
-//     digitalWrite(rightMotorPin2, LOW);
-//     delay(500);
+  //daniel did this part
+  //if distance < 5 & blue < 80 then stop, back up, turn, drive a bit, turn again, drive, continue loop
+  if(distance < 5 && int(blue) < 80){
+    //stop
+    digitalWrite(leftMotorPin1, LOW);
+    digitalWrite(leftMotorPin2, LOW);
+    digitalWrite(rightMotorPin1, LOW);
+    digitalWrite(rightMotorPin2, LOW);
+    delay(500);
 
-//     //back up
-//     digitalWrite(leftMotorPin1, LOW);
-//     digitalWrite(leftMotorPin2, LOW);
-//     digitalWrite(rightMotorPin1, LOW);
-//     digitalWrite(rightMotorPin2, LOW);
-//     delay(500);
+    //back up
+    digitalWrite(leftMotorPin1, LOW);
+    digitalWrite(leftMotorPin2, HIGH);
+    digitalWrite(rightMotorPin1, HIGH);
+    digitalWrite(rightMotorPin2, LOW);
+    delay(500);
 
-//     //turn left
-//     digitalWrite(leftMotorPin1, LOW);
-//     digitalWrite(leftMotorPin2, LOW);
-//     digitalWrite(rightMotorPin1, LOW);
-//     digitalWrite(rightMotorPin2, LOW);
+    //turn left
+    digitalWrite(leftMotorPin1, HIGH);
+    digitalWrite(leftMotorPin2, LOW);
+    digitalWrite(rightMotorPin1, HIGH);
+    digitalWrite(rightMotorPin2, LOW);
+    delay(250);
 
-//     //go forward
+    //go forward
+    digitalWrite(leftMotorPin1, HIGH);
+    digitalWrite(leftMotorPin2, LOW);
+    digitalWrite(rightMotorPin1, LOW);
+    digitalWrite(rightMotorPin2, HIGH);
+    delay(250);
 
-//     //turn left again
+    //turn right
+    digitalWrite(leftMotorPin1, LOW);
+    digitalWrite(leftMotorPin2, HIGH);
+    digitalWrite(rightMotorPin1, LOW);
+    digitalWrite(rightMotorPin2, HIGH);
+    delay(250);
 
-  
+    //go forward
+    digitalWrite(leftMotorPin1, HIGH);
+    digitalWrite(leftMotorPin2, LOW);
+    digitalWrite(rightMotorPin1, LOW);
+    digitalWrite(rightMotorPin2, HIGH);
+    delay(1000);
+    
+    //turn right
+    digitalWrite(leftMotorPin1, LOW);
+    digitalWrite(leftMotorPin2, HIGH);
+    digitalWrite(rightMotorPin1, LOW);
+    digitalWrite(rightMotorPin2, HIGH);
+    delay(250);
 
+    //go forward
+    digitalWrite(leftMotorPin1, HIGH);
+    digitalWrite(leftMotorPin2, LOW);
+    digitalWrite(rightMotorPin1, LOW);
+    digitalWrite(rightMotorPin2, HIGH);
+    delay(250);
 
+    //turn left
+    digitalWrite(leftMotorPin1, HIGH);
+    digitalWrite(leftMotorPin2, LOW);
+    digitalWrite(rightMotorPin1, HIGH);
+    digitalWrite(rightMotorPin2, LOW);
+    delay(250);
+
+    totalTime += turnTime;
+
+  }
+
+  if(distance < 5 && int(blue) > 80){
+    //drive forward until ball is under scoop
+    digitalWrite(leftMotorPin1, HIGH);
+    digitalWrite(leftMotorPin2, LOW);
+    digitalWrite(rightMotorPin1, LOW);
+    digitalWrite(rightMotorPin2, HIGH);
+    delay(500);
+
+    //scoop the ball
+    digitalWrite(scoopMotorPin1, HIGH);
+    digitalWrite(scoopMotorPin2, LOW);
+    delay(500);
+
+    //stop
+    digitalWrite(scoopMotorPin1, LOW);
+    digitalWrite(scoopMotorPin2, LOW);
+    delay(100);
+
+    //return scoop to starting position
+    digitalWrite(scoopMotorPin1, LOW);
+    digitalWrite(scoopMotorPin2, HIGH);
+    delay(500);
+
+    collected++;
+    totalTime += scoopTime;
+
+  }
+
+  runTime = startTime + millis();
+  if(totalTime >= duration){
+    //need to alternate turning directionsgi
+    //stop
+    digitalWrite(leftMotorPin1, LOW);
+    digitalWrite(leftMotorPin2, LOW);
+    digitalWrite(rightMotorPin1, LOW);
+    digitalWrite(rightMotorPin2, LOW);
+    delay(500);
+
+    //back up
+    digitalWrite(leftMotorPin1, LOW);
+    digitalWrite(leftMotorPin2, HIGH);
+    digitalWrite(rightMotorPin1, HIGH);
+    digitalWrite(rightMotorPin2, LOW);
+    delay(500);
+
+    //turn
+    if(lastTurnDirection == 1){
+      digitalWrite(leftMotorPin1, HIGH);
+      digitalWrite(leftMotorPin2, LOW);
+      digitalWrite(rightMotorPin1, HIGH);
+      digitalWrite(rightMotorPin2, LOW);
+      lastTurnDirection = 0;
+    }else{
+      digitalWrite(leftMotorPin1, LOW);
+      digitalWrite(leftMotorPin2, HIGH);
+      digitalWrite(rightMotorPin1, LOW);
+      digitalWrite(rightMotorPin2, HIGH);
+      lastTurnDirection = 1;
+    }
+    delay(250);
+
+    //go forward
+    digitalWrite(leftMotorPin1, HIGH);
+    digitalWrite(leftMotorPin2, LOW);
+    digitalWrite(rightMotorPin1, LOW);
+    digitalWrite(rightMotorPin2, HIGH);
+
+    //turn
+    if(lastTurnDirection == 1){
+      digitalWrite(leftMotorPin1, HIGH);
+      digitalWrite(leftMotorPin2, LOW);
+      digitalWrite(rightMotorPin1, HIGH);
+      digitalWrite(rightMotorPin2, LOW);
+      lastTurnDirection = 0;
+    }else{
+      digitalWrite(leftMotorPin1, LOW);
+      digitalWrite(leftMotorPin2, HIGH);
+      digitalWrite(rightMotorPin1, LOW);
+      digitalWrite(rightMotorPin2, HIGH);
+      lastTurnDirection = 1;
+    }
+    delay(250);
+
+    startTime = millis();
+
+  }
+
+  if(collected >= 3){
+   //return to start
+   //head to edge of box, follow it until back to start, 
+   //turn into box
+
+   //turn left
+   digitalWrite(leftMotorPin1, HIGH);
+   digitalWrite(leftMotorPin2, LOW);
+   digitalWrite(rightMotorPin1, HIGH);
+   digitalWrite(rightMotorPin2, LOW);
+
+   //go forward
+   digitalWrite(leftMotorPin1, HIGH);
+   digitalWrite(leftMotorPin2, LOW);
+   digitalWrite(rightMotorPin1, LOW);
+   digitalWrite(rightMotorPin2, HIGH);
+
+   //turn right
+   digitalWrite(leftMotorPin1, LOW);
+   digitalWrite(leftMotorPin2, HIGH);
+   digitalWrite(rightMotorPin1, LOW);
+   digitalWrite(rightMotorPin2, HIGH);
+
+   //go forward
+   digitalWrite(leftMotorPin1, HIGH);
+   digitalWrite(leftMotorPin2, LOW);
+   digitalWrite(rightMotorPin1, LOW);
+   digitalWrite(rightMotorPin2, HIGH);
+
+  }
 
 }
