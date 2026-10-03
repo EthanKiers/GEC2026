@@ -47,7 +47,7 @@ void setup() {
   pinMode(enaScoop, OUTPUT);
   pinMode(scoopMotorPin1, OUTPUT);
   pinMode(scoopMotorPin2, OUTPUT);
-  delay(2000);
+  // delay(2000);
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
 
